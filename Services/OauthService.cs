@@ -1,3 +1,9 @@
+using System.ComponentModel.DataAnnotations;
+using System.IdentityModel.Tokens.Jwt;
+using System.Security.Claims;
+using System.Text;
+using Microsoft.IdentityModel.Tokens;
+using ApiBlogEngine.Repository;
 public class OauthService : IOauthService{
 
     private readonly ILogger<OauthService> _logger;
