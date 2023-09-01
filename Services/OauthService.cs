@@ -4,6 +4,8 @@ using System.Security.Claims;
 using System.Text;
 using Microsoft.IdentityModel.Tokens;
 using ApiBlogEngine.Repository;
+
+namespace ApiBlogEngine.Services;
 public class OauthService : IOauthService{
 
     private readonly ILogger<OauthService> _logger;
@@ -17,10 +19,11 @@ public class OauthService : IOauthService{
         _context = context;
         _configuration = configuration;
     }
-    public OauthResponse GetToken(string userName, string password){
+    public OauthResponse GetToken(string email, string password){
        
         _logger.LogInformation("GetToken");
-        User user = _context.Users.Find(userName, password);
+        //TODO: buscar el usuario 
+        User user = _context.Users.Where(u => u.Email == email && u.Password == password).FirstOrDefault();
         if(user == null){
             OauthResponse oauthResponse = new OauthResponse();
             oauthResponse.message = "Invalid user name or password";
