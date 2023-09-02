@@ -6,6 +6,6 @@ public interface IPostService
     IEnumerable<PostDto> GetPostByStatus(Enum status);
     PostDto GetPostsById(int id);
     PostDto CreatePostAsync(string email, PostDto newPost);
-    Task UpdatePostAsync(PostDto postToBeUpdated, int postId);
+    Boolean UpdatePostAsync(PostDto postToBeUpdated, string email);
     Task DeletePostAsync(int postId);
 }

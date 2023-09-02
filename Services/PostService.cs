@@ -9,9 +9,16 @@ public class PostServices : IPostService
 
     public enum Status
     {
-        Draft = 0,
-        Published = 1,
-        Deleted = 2
+        Draft = 1,
+
+        Submitted = 2,
+
+        Pendind = 3, 
+
+        Rejected = 4,
+
+        Published = 5,
+
     }
 
     public enum Role
@@ -95,8 +102,30 @@ public class PostServices : IPostService
         throw new NotImplementedException();
     }
 
-    public Task UpdatePostAsync(PostDto postToBeUpdated, int postId)
+    public Boolean UpdatePostAsync(PostDto postToBeUpdated, string email)
     {
-        throw new NotImplementedException();
+        _logger.LogInformation("UpdatePost");
+        // validate the user Rol 
+        User user = _context.Users.Where(u => u.Email == email).FirstOrDefault();
+        if( user != null && user.Role != (int)Role.Writer){
+            throw new Exception("User is not a writer");
+        }
+        // create the post
+        Post post = _context.Posts.Where(p => p.Id == postToBeUpdated.Id).FirstOrDefault();
+        if(post == null){
+            throw new Exception("Post not found");
+        }
+        if(post.Author != user.Id){
+            throw new Exception("User is not the author of the post");
+        }
+        // if(post.Status == (int)Status.Published || post.Status == (int)Status.Submitted){
+        //     throw new Exception("Post is not avaible to edit");
+        // }
+        post.Title = postToBeUpdated.Title;
+        post.Content = postToBeUpdated.Content;
+        post.UpdatedAt = DateTime.Now;
+        _context.Posts.Update(post);
+        _context.SaveChanges();
+        return true;
     }
 }

@@ -46,12 +46,18 @@ public class PostsController : ControllerBase {
         return post;
     }
 
-/*
-    [HttpPut("posts/{id}", Name = "UpdatePost")]
-    public Posts Update(int id, Posts post)
+
+    [HttpPut("posts/edit", Name = "UpdatePost")]
+    [Authorize]
+    public IActionResult Update(PostDto post)
     {
-        throw new NotImplementedException();
+        _logger.LogInformation("UpdatePost");
+          string userEmail = HttpContext.User.FindFirst(ClaimTypes.Email)?.Value; 
+        _postService.UpdatePostAsync(post, userEmail);
+        return Ok();
     }
+
+    /*
 
     [HttpDelete("posts/{id}", Name = "DeletePost")]
     public Posts Delete(int id)
