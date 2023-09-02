@@ -38,6 +38,7 @@ builder.Services.AddSwaggerGen();
 
 builder.Services.AddSqlServer<BlogEngineContext>(builder.Configuration.GetConnectionString("DefaultConnection"));
 builder.Services.AddScoped<IOauthService, OauthService>();
+builder.Services.AddScoped<IPostService, PostServices>();
 
 var app = builder.Build();
 
