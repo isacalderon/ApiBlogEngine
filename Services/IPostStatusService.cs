@@ -8,6 +8,6 @@ public interface IPostStatusService{
 
     IEnumerable<int> GetPostsByStatus(int status);
 
-    PostStatus? UpdatePostStatus(int status, int postId, string commentEditor);
+    PostStatus? UpdatePostStatus(StatusDto request, string email);
 
 }

@@ -46,22 +46,56 @@ public class PostStatusService : IPostStatusService
         return _context.PostStatuses.Where(p => p.Status == status).Select(p => p.Post);
     }
 
-    public PostStatus? UpdatePostStatus(int status, int postId, string commentEditor)
+    public PostStatus? UpdatePostStatus(StatusDto request, string email)
     {
         _logger.LogInformation("UpdatePostStatus");
-        var postStatus = _context.PostStatuses.Where(p => p.Post == postId).FirstOrDefault();
-        if (postStatus != null)
-        {
-            postStatus.Status = status;
-            postStatus.CommentEditor = commentEditor;
-            postStatus.CreatedAt = DateTime.Now;
-            if(status == (int)PostStatusEnum.Submitted || status == (int)PostStatusEnum.ApprovedPublished)
-                postStatus.Locked = 1;
-            else if(status == (int)PostStatusEnum.Rejected)
-                postStatus.Locked = 0;
-            _context.SaveChanges();
-             return postStatus;
+        if(request.Status == (int)PostStatusEnum.Submitted){
+            _logger.LogInformation("Submitted Status");
+            return SubmittedStatus(request, email);
         }
+        
+        if(request.Status == (int)PostStatusEnum.ApprovedPublished || request.Status == (int)PostStatusEnum.Rejected){
+            _logger.LogInformation("approved or Reject Status");
+            return ApprovedPublishedStatus(request, email);
+        }
+
        return null; 
     }
+
+    private PostStatus? SubmittedStatus(StatusDto request, string email){
+
+        var user = _context.Users.Where(u => u.Email == email).FirstOrDefault();
+        if(user!= null && user.Role == 3){ // Writer
+            var postStatus = _context.PostStatuses.Where(p => p.Post == request.PostId).FirstOrDefault();
+            if (postStatus != null)
+            {
+                postStatus.Status = request.Status;
+                postStatus.CreatedAt = DateTime.Now;
+                postStatus.Locked = 1;
+                _context.SaveChanges();
+                return postStatus;
+            }
+        }
+        
+        return null;
+    } 
+
+    private PostStatus? ApprovedPublishedStatus(StatusDto request, string email){
+        var user = _context.Users.Where(u => u.Email == email).FirstOrDefault();
+        if(user!= null && user.Role == 2){ // Editor
+            var postStatus = _context.PostStatuses.Where(p => p.Post == request.PostId).FirstOrDefault();
+            if (postStatus != null)
+            {
+                postStatus.Status = request.Status;
+                postStatus.CommentEditor = request.CommentEditor??string.Empty;
+                postStatus.CreatedAt = DateTime.Now;
+                postStatus.Locked = 1;
+                _context.SaveChanges();
+                return postStatus;
+            }
+        }
+        
+        return null;
+    }
+
 }
