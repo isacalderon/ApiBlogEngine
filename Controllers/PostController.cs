@@ -1,8 +1,9 @@
 using Microsoft.AspNetCore.Mvc;
-using ApiBlogEngine.Repository; 
+using ApiBlogEngine.Repository;
+using Microsoft.AspNetCore.Authorization;
 
 [ApiController]
-[Route("api/[controller]")]
+[Route("api/")]
 public class PostsController : ControllerBase {
     private readonly ILogger<PostsController> _logger;
 
@@ -18,6 +19,7 @@ public class PostsController : ControllerBase {
     }
 
     [HttpGet("posts", Name = "GetPosts")]
+    [Authorize]
     public IActionResult Get()
     {
         _logger.LogInformation("GetPosts");
@@ -27,12 +29,14 @@ public class PostsController : ControllerBase {
     }
 
     [HttpGet("posts/{id}", Name = "GetPost")]
+    [Authorize]
     public IActionResult Get(int id)
     {
        throw new NotImplementedException();
     }
 
     [HttpPost("posts", Name = "CreatePost")]
+    [Authorize]
     public PostDto Create(PostDto post)
     {
         _logger.LogInformation("CreatePost");
