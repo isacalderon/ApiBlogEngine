@@ -96,6 +96,7 @@ public partial class BlogEngineContext : DbContext
                 .HasColumnName("created_at");
             entity.Property(e => e.Post).HasColumnName("post");
             entity.Property(e => e.Status).HasColumnName("status");
+            entity.Property(e => e.Locked).HasColumnName("locked");
 
             entity.HasOne(d => d.PostNavigation).WithMany(p => p.PostStatuses)
                 .HasForeignKey(d => d.Post)

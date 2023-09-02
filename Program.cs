@@ -40,6 +40,7 @@ builder.Services.AddSqlServer<BlogEngineContext>(builder.Configuration.GetConnec
 builder.Services.AddScoped<IOauthService, OauthService>();
 builder.Services.AddScoped<IPostService, PostServices>();
 builder.Services.AddScoped<ICommentService, CommentService>();
+builder.Services.AddScoped<IPostStatusService, PostStatusService>();
 
 var app = builder.Build();
 

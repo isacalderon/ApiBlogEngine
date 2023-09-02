@@ -15,6 +15,8 @@ public partial class PostStatus
 
     public int Status { get; set; }
 
+    public int Locked { get; set; }
+
     public virtual Post PostNavigation { get; set; } = null!;
 
     public virtual Status StatusNavigation { get; set; } = null!;
