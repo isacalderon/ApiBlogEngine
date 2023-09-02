@@ -1,20 +1,17 @@
 using Microsoft.AspNetCore.Mvc;
-using ApiBlogEngine.Repository;
 using Microsoft.AspNetCore.Authorization;
+using System.Security.Claims;
 
 [ApiController]
 [Route("api/")]
 public class PostsController : ControllerBase {
     private readonly ILogger<PostsController> _logger;
 
-    private readonly BlogEngineContext _context;
-
     private readonly IPostService _postService;
 
-    public PostsController(ILogger<PostsController> logger, BlogEngineContext context, IPostService postService)
+    public PostsController(ILogger<PostsController> logger, IPostService postService)
     {
         _logger = logger;
-        _context = context;
         _postService = postService;
     }
 
@@ -23,16 +20,20 @@ public class PostsController : ControllerBase {
     public IActionResult Get()
     {
         _logger.LogInformation("GetPosts");
+        var userEmail = HttpContext.User.FindFirst(ClaimTypes.Email)?.Value;
+       _logger.LogInformation(userEmail);
         var posts = _postService.GetAllPostsAsyn();
         _logger.LogInformation($"GetPosts: {posts.Count()}");
         return Ok(posts); 
     }
 
-    [HttpGet("posts/{id}", Name = "GetPost")]
+    [HttpGet("posts/author", Name = "GetPost")]
     [Authorize]
-    public IActionResult Get(int id)
+    public IActionResult GetOwnPost()
     {
-       throw new NotImplementedException();
+        _logger.LogInformation("GetPost by Author");
+         var userEmail = HttpContext.User.FindFirst(ClaimTypes.Email)?.Value;
+        return Ok(_postService.GetPostsByAuthor(userEmail));
     }
 
     [HttpPost("posts", Name = "CreatePost")]
@@ -40,7 +41,8 @@ public class PostsController : ControllerBase {
     public PostDto Create(PostDto post)
     {
         _logger.LogInformation("CreatePost");
-        _postService.CreatePostAsync("", post);
+         string userEmail = HttpContext.User.FindFirst(ClaimTypes.Email)?.Value;
+        _postService.CreatePostAsync(userEmail, post);
         return post;
     }
 

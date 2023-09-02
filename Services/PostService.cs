@@ -7,6 +7,22 @@ public class PostServices : IPostService
 
     private readonly BlogEngineContext _context;
 
+    public enum Status
+    {
+        Draft = 0,
+        Published = 1,
+        Deleted = 2
+    }
+
+    public enum Role
+    {
+        Admin = 1,
+        Editor =  2,
+        Writer = 3, 
+        Reader = 4
+
+    }
+
     public PostServices(ILogger<PostsController> logger, BlogEngineContext context)
     {
         _logger = logger;
@@ -14,10 +30,17 @@ public class PostServices : IPostService
     }
     public PostDto CreatePostAsync(String email, PostDto newPost)
     {
+        _logger.LogInformation("CreatePost");
+        // validate the user Rol 
+        User user = _context.Users.Where(u => u.Email == email).FirstOrDefault();
+        if( user != null && user.Role != (int)Role.Writer){
+            throw new Exception("User is not a writer");
+        }
+        // create the post
         Post post = new Post();
         post.Title = newPost.Title;
         post.Content = newPost.Content;
-        post.Author = 1;
+        post.Author = user.Id;
         post.CreatedAt = DateTime.Now;
         post.UpdatedAt = DateTime.Now;
         _context.Posts.Add(post);
@@ -54,9 +77,17 @@ public class PostServices : IPostService
         throw new NotImplementedException();
     }
 
-    public IEnumerable<PostDto> GetPostsByAuthor(int authorId)
+    public IEnumerable<PostDto> GetPostsByAuthor(string email)
     {
-        throw new NotImplementedException();
+         var userId = _context.Users.Where(u => u.Email == email).FirstOrDefault()?.Id;
+         List<Post> results= _context.Posts.Where(p => p.Author == userId).ToList();
+         IEnumerable<PostDto> response = results.Select(p => new PostDto()
+         {
+             Title = p.Title,
+             Content = p.Content
+         }).ToList();
+         return response;
+
     }
 
     public PostDto GetPostsById(int id)
