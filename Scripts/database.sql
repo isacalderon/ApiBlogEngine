@@ -46,6 +46,7 @@ create table post_status (
     comment_editor varchar(100) not null,
     created_at datetime not null,
     status int not null,
+    locked int null default 0,
     foreign key (post) references posts(id),
     foreign key (status) references status(id)
 ); 

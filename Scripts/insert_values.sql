@@ -19,6 +19,6 @@ insert posts (title, content, author, created_at, updated_at) values ('Post 1', 
 insert comments (content, author, post) values ('Comment 1', 4, 1);
 insert comments (content, author, post) values ('Comment 2', 3, 1);
 
-insert post_status (post, comment_editor, created_at, status) values (1, 'Comment 1',  GETDATE(), 1);
-insert post_status (post, comment_editor, created_at, status) values (1, '', GETDATE(), 3);
-insert post_status (post, comment_editor, created_at, status) values (1, '', GETDATE(), 4);
+insert post_status (post, comment_editor, created_at, status, locked) values (1, 'Comment 1',  GETDATE(), 1, 0);
+insert post_status (post, comment_editor, created_at, status, locked) values (1, '', GETDATE(), 3, 1);
+insert post_status (post, comment_editor, created_at, status, locked) values (1, '', GETDATE(), 4, 0);
