@@ -33,7 +33,20 @@ public class PostsController : ControllerBase {
         }
     }
 
-    [HttpGet("posts/author", Name = "GetPost")]
+    [HttpGet("posts/id/{id}", Name = "GetPostsbyId")]
+    [Authorize]
+    public IActionResult GetbyId(int id)
+    {
+        try{
+        _logger.LogInformation("GetPosts");
+        var posts = _postService.GetPostById(id); 
+        return Ok(posts); 
+        }catch(Exception e){
+            return StatusCode((int)HttpStatusCode.NotFound, e.Message);
+        }
+    }
+
+    [HttpGet("posts/author", Name = "GetPostByAuthor")]
     [Authorize]
     public IActionResult GetOwnPost()
     {

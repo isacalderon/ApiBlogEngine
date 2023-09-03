@@ -24,7 +24,14 @@ public class CommentController:ControllerBase {
         {
             return Unauthorized();
         }
-        return _commentService.CreateCommentAsync(authorEmail, comment);
+        return Ok(_commentService.CreateCommentAsync(authorEmail, comment));
+    }
+
+    [HttpGet("posts/{postId}/comments")]
+    [Authorize]
+    public ActionResult<List<CommentDto>> GetComments(int postId)
+    {
+        return Ok(_commentService.GetComments(postId));
     }
 
 

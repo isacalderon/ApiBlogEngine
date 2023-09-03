@@ -23,4 +23,18 @@ public class CommentService : ICommentService
         _context.SaveChanges(); 
         return comment;
     }
+
+    public IEnumerable<CommentDto> GetComments(int postId)
+    {
+        var comments = _context.Comments.Where(c => c.Post == postId).ToList();
+        List<CommentDto> commentsDto = new List<CommentDto>();
+        foreach (var comment in comments)
+        {
+            commentsDto.Add(new CommentDto(){
+                Comment = comment.Content,
+                PostId = comment.Post
+            });
+        }
+        return commentsDto;
+    }
 }

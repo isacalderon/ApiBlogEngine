@@ -86,6 +86,20 @@ public class PostServices : IPostService
        return listPostDto;
     }
 
+    public PostDto GetPostById(int id){
+        // review if the status is published 
+        var listPublished = _postStatusService.GetPostsByStatus((int)Status.Published); 
+        if(!listPublished.Contains(id)){
+            throw new Exception("Post not found");
+        }
+        Post post = _context.Posts.Where(p => p.Id == id).FirstOrDefault()?? throw new Exception("Post not found");
+        return new PostDto(){
+            Id = post.Id,
+            Title = post.Title,
+            Content = post.Content
+        };
+    }
+
     public IEnumerable<PostDto> GetPostsByAuthor(string? email)
     {
          var userId = _context.Users.Where(u => u.Email == email).FirstOrDefault()?.Id;

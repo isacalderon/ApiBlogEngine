@@ -42,6 +42,17 @@ builder.Services.AddScoped<IPostService, PostServices>();
 builder.Services.AddScoped<ICommentService, CommentService>();
 builder.Services.AddScoped<IPostStatusService, PostStatusService>();
 
+builder.Services.AddCors(options =>
+{
+    options.AddPolicy("ReactPolicy",
+        builder =>
+        {
+            builder.WithOrigins("http://localhost:3000")
+                   .AllowAnyMethod()
+                   .AllowAnyHeader();
+        });
+});
+
 var app = builder.Build();
 
 // Configure the HTTP request pipeline.
@@ -50,6 +61,8 @@ if (app.Environment.IsDevelopment())
     app.UseSwagger();
     app.UseSwaggerUI();
 }
+
+app.UseCors("ReactPolicy");
 
 app.UseHttpsRedirection();
 
