@@ -1,4 +1,5 @@
 
+using System.Net;
 using ApiBlogEngine.Repository;
 
 public class PostServices : IPostService
@@ -13,9 +14,7 @@ public class PostServices : IPostService
     {
         Draft = 1,
 
-        Submitted = 2,
-
-        Pendind = 3, 
+        SubmittedPending = 2, 
 
         Rejected = 4,
 
@@ -38,7 +37,7 @@ public class PostServices : IPostService
         _context = context;
         _postStatusService = postStatusService;
     }
-    public PostDto CreatePostAsync(String email, PostDto newPost)
+    public PostDto CreatePostAsync(String? email, PostDto? newPost)
     {
         _logger.LogInformation("CreatePost");
         // validate the user Rol 
@@ -53,10 +52,20 @@ public class PostServices : IPostService
         post.Author = user.Id;
         post.CreatedAt = DateTime.Now;
         post.UpdatedAt = DateTime.Now;
-        _context.Posts.Add(post);
+         _context.Posts.Add(post);
         _context.SaveChanges();
 
-        return newPost;
+        post = _context.Posts.OrderByDescending(e => e.Id).FirstOrDefault()?? throw new Exception("Post not found");
+
+        _logger.LogInformation($"Post created: {post.Id}");
+        // create the post status
+        _context.PostStatuses.Add(_postStatusService.CreatePostStatus(post.Id)); 
+
+        return new PostDto(){
+            Id = post.Id,
+            Title = post.Title,
+            Content = post.Content
+        };
 
     }
 
@@ -77,7 +86,7 @@ public class PostServices : IPostService
        return listPostDto;
     }
 
-    public IEnumerable<PostDto> GetPostsByAuthor(string email)
+    public IEnumerable<PostDto> GetPostsByAuthor(string? email)
     {
          var userId = _context.Users.Where(u => u.Email == email).FirstOrDefault()?.Id;
          List<Post> results= _context.Posts.Where(p => p.Author == userId).ToList();
@@ -90,26 +99,65 @@ public class PostServices : IPostService
 
     }
 
-    public Boolean UpdatePostAsync(PostDto postToBeUpdated, string email)
+    public IEnumerable<PostDto> GetPendingPosts(string? email)
+    {
+        // the user should be a editor 
+        User user = _context.Users.Where(u => u.Email == email).FirstOrDefault()?? throw new Exception("User not found");
+        if (user.Role != (int)Role.Editor){
+            throw new Exception("User is not a editor");
+        }
+        // Search all the Pending Post 
+       IEnumerable<int> pendingPost = _postStatusService.GetPostsByStatus((int)Status.SubmittedPending);
+       List<Post> listPost = _context.Posts.Where(p => pendingPost.Contains(p.Id)).ToList();
+       _logger.LogInformation($"GetPosts: {listPost.Count()}");
+       List<PostDto> listPostDto = new List<PostDto>();
+       listPost.ForEach(p => listPostDto.Add(new PostDto(){
+           Id = p.Id,
+           Title = p.Title,
+           Content = p.Content}));
+     
+       _logger.LogInformation($"Final get Post: {listPostDto.Count()}");
+       
+       return listPostDto;
+    }
+
+    public UpdatePostResponse UpdatePostAsync(PostDto? postToBeUpdated, string? email)
     {
         _logger.LogInformation("UpdatePost");
         // validate the user Rol 
         User user = _context.Users.Where(u => u.Email == email).FirstOrDefault()?? throw new Exception("User not found");
         if( user != null && user.Role != (int)Role.Writer){
-            throw new Exception("User is not a writer");
+            return new UpdatePostResponse(101, "User is not a writer");
         }
-        // create the post
+        _logger.LogInformation($"User found: {user.Id}");
+        // get the post to update
+        if (postToBeUpdated == null){
+            return new UpdatePostResponse(102, "Post to be updated is null");
+        }
         Post post = _context.Posts.Where(p => p.Id == postToBeUpdated.Id).FirstOrDefault()?? throw new Exception("Post not found");
-       
+        _logger.LogInformation($"Post found: {post.Id}");
+        // get the estatus of the post
+        PostStatus postStatus = _postStatusService.GetPostStatus(post.Id);
+        if(postStatus.Locked == 1){
+            return new UpdatePostResponse(103, "The Post can not be updated because is locked");
+        }
+        _logger.LogInformation($"Post status found: {postStatus.Status}");
+        // validate the user is the author of the post
         if(post.Author != user?.Id){
-            throw new Exception("User is not the author of the post");
+            return new UpdatePostResponse(104, "User is not the author of the post");
         }
 
         post.Title = postToBeUpdated.Title?? post.Title;
         post.Content = postToBeUpdated.Content?? post.Content;
         post.UpdatedAt = DateTime.Now;
-        _context.Posts.Update(post);
-        _context.SaveChanges();
-        return true;
+        try{
+            _context.Posts.Update(post);
+            _context.SaveChanges();
+            _logger.LogInformation($"Post updated: {post.Id}");
+             return new UpdatePostResponse(200, "Post updated successfully", postToBeUpdated);
+        }catch(Exception e){
+            return new UpdatePostResponse(105, e.Message);
+        }
+       
     }
 }

@@ -1,15 +1,15 @@
 using System.Security.Claims;
 using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc; 
 
 [ApiController]
 [Route("api/")]
 public class StatusController : ControllerBase
 {
     private readonly ILogger<StatusController> _logger;
-    private readonly PostStatusService _postStatusService;
+    private readonly IPostStatusService _postStatusService;
 
-    public StatusController(ILogger<StatusController> logger, PostStatusService postStatusService)
+    public StatusController(ILogger<StatusController> logger, IPostStatusService postStatusService)
     {
         _logger = logger;
         _postStatusService = postStatusService;
@@ -23,7 +23,7 @@ public class StatusController : ControllerBase
         // Deberia enviar el Usuario, si es escritor puede hacer el subbmited de su post 
          var userEmail = HttpContext.User.FindFirst(ClaimTypes.Email)?.Value;
         var postStatus = _postStatusService.UpdatePostStatus(request, userEmail??string.Empty);
-        return RedirectToAction("Index");
+        return Ok(postStatus);
     }
     
 }

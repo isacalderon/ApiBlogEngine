@@ -23,7 +23,7 @@ public class OauthService : IOauthService{
        
         _logger.LogInformation("GetToken");
         //TODO: buscar el usuario 
-        User user = _context.Users.Where(u => u.Email == email && u.Password == password).FirstOrDefault();
+        User user = _context.Users.Where(u => u.Email == email && u.Password == password).FirstOrDefault()?? throw new Exception("User not found");
         if(user == null){
             OauthResponse oauthResponse = new OauthResponse();
             oauthResponse.message = "Invalid user name or password";

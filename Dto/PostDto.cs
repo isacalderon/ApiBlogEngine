@@ -9,6 +9,5 @@ public class PostDto {
 
     [Required]
     public String? Content { get; set; }
-
     
 }
